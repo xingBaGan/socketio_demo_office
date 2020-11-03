@@ -1,21 +1,25 @@
-var app = require("express")();
-var http = require("http").createServer(app);
-var io = require("socket.io")(http);
-//create a server object:
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+const content = require("fs").readFileSync(__dirname + "/index.html", "utf8");
+var httpServer = require("http").createServer((req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.setHeader("Content-Length", Buffer.byteLength(content));
+  res.end(content);
 });
 
-io.on("connection", (socket) => {
-  console.log("a user connnected");
+//create a server object:
+const io = require("socket.io")(httpServer);
+
+io.on("connect", (socket) => {
+  console.log(" a user connect");
+
   socket.on("chat message", (msg) => {
     io.emit("chat message", msg);
   });
+
   socket.on("disconnect", () => {
     console.log("user disconnected");
   });
 });
 
-http.listen(3000, () => {
-  console.log("listening on *:3000");
+httpServer.listen(3000, () => {
+  console.log("go to http://localhost:3000");
 });
